@@ -37,7 +37,7 @@ class App extends Component {
   handlePredictClick = (event) => {
     const formData = this.state.formData;
     this.setState({ isLoading: true });
-    fetch('http://127.0.0.1:7500/api/spread/basic_spreads', 
+    fetch('http://a4146c99a6fa.ngrok.io/api/spread/basic_spreads', 
       {
         method: 'POST',
         body: formData
@@ -125,7 +125,6 @@ class App extends Component {
                   disabled={isLoading}
                   onClick={!isLoading ? this.handlePredictClick : null}>
                   { isLoading ? 'Fetching Suggestions' : 'Suggest' }
-                  console.log(this.stat.formData)
                 </Button>
               </Col>
               <Col>
