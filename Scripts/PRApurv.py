@@ -15,6 +15,7 @@ class ProjectRewarder:
         self.flag = flag #type of spread, ["calls", "puts"]
         self.spread_type = spread_type #credit/debit ["credit", "debit"]
         self.best_ratio = None
+        self.cur_price = None
     def __repr__(self):
         return "<ProjectRewarder ticker={} date={} flag={} spread_type={}>".format(self.ticker, self.date, self.flag, self.spread_type)
     def setTicker(self, newTicker):
@@ -55,6 +56,7 @@ class ProjectRewarder:
         put['Fair Price']  = [i if i >= 0.01 else 0.01 for i in (put['ask'] + put['bid'])/2]
 
         currentPrice = s.history(period = "max")['Close'].iloc[-1]
+        self.cur_price = currentPrice
         oldPrice = s.history(period = "max")['Low'].iloc[-20]
         r = currentPrice - oldPrice
         priceRange = [int((currentPrice - r).round()), int((currentPrice + r).round())]
@@ -83,6 +85,7 @@ class ProjectRewarder:
 
         return n
     def appendBest(self, l, s, lp, sp, r, mrx, mrw):
+        self.best_ratio['Current Price'] = self.cur_price
         self.best_ratio['Long(Buy)'] = l
         self.best_ratio['Short(Sell)'] = s
         self.best_ratio['Risk/Reward Ratio'] = r
@@ -90,6 +93,7 @@ class ProjectRewarder:
         self.best_ratio['Long Premium'] = lp
         self.best_ratio['maxRisk'] = mrx
         self.best_ratio['maxReward'] = mrw
+
 
     def rnR(self, sL, sS, pL, pS):
 
@@ -126,6 +130,7 @@ class ProjectRewarder:
         premium_short= self.best_ratio['Short Premium']
 
         sT = np.arange(15,45,1)
+        
         if (self.flag, self.spread_type) == ('puts', 'debit') or (self.flag, self.spread_type) == ('calls', 'credit'):
             long_payoff = self.put_payoff(sT, strike_price_long,premium_long)
             short_payoff = self.put_payoff(sT, strike_price_short,premium_short)*-1
@@ -148,8 +153,7 @@ class ProjectRewarder:
     def getBasicSpread(self):
         calls, puts = self.getInitialStockData()
         n = self.getData(calls if self.flag == "calls" else puts)
-        self.best_ratio = {'Short(Sell)':0, 'Long(Buy)':0, 'Risk/Reward Ratio':((2**31)-1), 'Short Premium':0, 'Long Premium':0, 'maxRisk':0, 'maxReward':0}
-        # print(n)
+        self.best_ratio = {'Current Price':0, 'Short(Sell)':0, 'Long(Buy)':0, 'Risk/Reward Ratio':((2**31)-1), 'Short Premium':0, 'Long Premium':0, 'maxRisk':0, 'maxReward':0}
         for short in n:
             for long in n:
                 if (self.flag, self.spread_type) == ('puts', 'debit') or (self.flag, self.spread_type) == ('calls', 'credit'):
@@ -180,9 +184,13 @@ class ProjectRewarder:
                         MaxRisk = z[0]
                         MaxReward = z[1]
 
+
                         if MaxReward > 0:
                             Ratio =  MaxRisk/MaxReward
                             if Ratio < self.best_ratio['Risk/Reward Ratio']:
                                 self.appendBest(long, short, premiumLong, premiumShort, Ratio, MaxRisk, MaxReward)
 
-worker = ProjectRewarder("UCO", "2020-08-20", "puts", "credit")
+# worker = ProjectRewarder("UCO", "2020-08-21", "puts", "credit")
+# worker.getBasicSpread()
+# print(worker.best_ratio)
+

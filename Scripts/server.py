@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
 from PRApurv import ProjectRewarder
+from flask_cors import CORS
 
 worker = ProjectRewarder(None, None, None, None)
 
 app = Flask(__name__)
+cors = CORS(app)
+
+print("CORRECT")
 
 '''
     ./ngrok http 7500
@@ -11,10 +15,10 @@ app = Flask(__name__)
     curl -X POST -d "date=2020-08-21" localhost:7500/api/set_date
     curl -X POST -d "flag=calls" localhost:7500/api/set_flag
     curl -X POST -d "spread_type=credit" localhost:7500/api/set_type
-    curl -X GET localhost:7500/api/spread/basic_spreads
-
+    curl -X POST -d "Stock=GOOG" localhost:7500/api/spread/basic_spreads
 '''
 
+<<<<<<< HEAD
 # @app.route('/api/set_ticker', methods=['POST'])
 # def setTicker():
 #     #when passing in variables to a flask method, check request.args, request.form, and request.json
@@ -57,6 +61,20 @@ def getBasicSpread():
 		return worker.best_ratio
 	except:
 		return jsonify({'status': 501})
+=======
+@app.route('/api/spread/basic_spreads', methods=['POST'])
+def getBasicSpread():
+    try:
+        data = request.json
+        worker.setTicker(data['Stock'])
+        worker.setDate(data['selectDate'])
+        worker.setFlag(data['selectFlag'])
+        worker.setType(data['selectType'])
+        worker.getBasicSpread()
+        return jsonify(worker.best_ratio)
+    except Exception as e:
+        return jsonify({'status': 501, 'exception': e})
+>>>>>>> a97310a8f2a075cdd5dcfa4f207feba7e6a8bd33
 
 
 
